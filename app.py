@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Initialize the OpenAI API key
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 def generate_answer(question):
     model_engine = "davinci"
