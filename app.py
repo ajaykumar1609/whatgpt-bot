@@ -53,6 +53,7 @@ def generate_response(question):
 # Define a route to handle incoming requests
 @app.route('/whatgpt', methods=['POST'])
 def whatgpt():
+    print("bot is running")
     incoming_que = request.values.get('Body', '').lower()
     print("Question: ", incoming_que)
     # Generate the answer using GPT-3
