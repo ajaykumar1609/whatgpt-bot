@@ -13,10 +13,13 @@ itsdangerous==2.1.2
 Jinja2==3.1.2
 MarkupSafe==2.1.2
 multidict==6.0.4
+mysql-connector-python==8.0.32
 ngrok==0.2.3
 openai==0.27.2
+protobuf==3.20.3
 PyJWT==2.6.0
 pytz==2023.2
+railway==0.0.4
 requests==2.28.2
 tqdm==4.65.0
 twilio==7.17.0
