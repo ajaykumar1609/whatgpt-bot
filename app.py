@@ -59,7 +59,7 @@ def whatgpt():
 
     # Get the conversation history from the database
     cursor = connection.cursor()
-    cursor.execute("SELECT history FROM conversation_history ORDER BY id DESC LIMIT 1")
+    cursor.execute("SELECT history FROM conversation_history2 ORDER BY id DESC LIMIT 1")
     result = cursor.fetchone()
     if result is None:
         history = ""
@@ -71,7 +71,7 @@ def whatgpt():
 
     # Store the conversation history in the database
     history += f"Q: {incoming_que}\nA: {answer}\n"
-    cursor.execute("INSERT INTO conversation_history (history) VALUES (%s)", (history,))
+    cursor.execute("INSERT INTO conversation_history2 (history) VALUES (%s)", (history,))
     connection.commit()
 
     # Close the database connection
