@@ -34,15 +34,14 @@ def connect_db():
 
 
 # Define a function to retrieve the last 3 questions and their corresponding answers from the database
-def get_last_3_questions_answers():
+def get_last_3_questions_answers(user_id):
     try:
         # Connect to the database
         connection = connect_db()
         cursor = connection.cursor()
 
         # Retrieve the last 3 questions and their corresponding answers from the table
-        sql = "SELECT question, answer FROM conversation ORDER BY id DESC LIMIT 3"
-        cursor.execute(sql)
+        cursor.execute("SELECT question, answer FROM user_conversation WHERE phone_number = %s ORDER BY id DESC LIMIT 3", (user_id,))
         results = cursor.fetchall()
 
         # Close the database connection
@@ -54,16 +53,16 @@ def get_last_3_questions_answers():
 
 
 # Define a function to add a question and its corresponding answer to the database
-def add_question_answer(question, answer):
+def add_question_answer(user_id,question, answer):
     try:
         # Connect to the database
         connection = connect_db()
         cursor = connection.cursor()
 
         # Insert the question and answer into the table
-        sql = "INSERT INTO conversation (question, answer) VALUES (%s, %s)"
-        val = (question, answer)
-        cursor.execute(sql, val)
+        cursor.execute("INSERT INTO user_conversation (phone_number, question, answer) VALUES (%s, %s, %s)", (user_id, question, answer))
+        # val = (question, answer)
+        # cursor.execute(sql, val)
 
         # Commit the changes
         connection.commit()
@@ -79,12 +78,12 @@ def add_question_answer(question, answer):
 
 
 # Define function togenerate response using GPT-3
-def generate_response(prompt, history=""):
+def generate_response(prompt, user_id):
     """
     Generates a response to the user's input using GPT-3 and the conversation history.
     """
     promp=""
-    p_QA = get_last_3_questions_answers()
+    p_QA = get_last_3_questions_answers(user_id)
     p=[]
     for row in p_QA:
         p.append(f"Q:{row[0]}\nA:{row[1]}\n")
@@ -124,7 +123,7 @@ def whatgpt():
             if answer[i+1]==":":
                 answer = answer[:i-1]
                 break
-    add_question_answer(incoming_que,answer)
+    add_question_answer(user_id,incoming_que,answer)
     print("Bot Answer: ", answer)
     # Send the response to Twilio
     bot_resp = MessagingResponse()
