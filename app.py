@@ -31,28 +31,86 @@ def connect_db():
     except Exception as e:
         print("Error connecting to the database:", e)
 
+
+
+# Define a function to retrieve the last 3 questions and their corresponding answers from the database
+def get_last_3_questions_answers():
+    try:
+        # Connect to the database
+        connection = connect_db()
+        cursor = connection.cursor()
+
+        # Retrieve the last 3 questions and their corresponding answers from the table
+        sql = "SELECT question, answer FROM conversation ORDER BY id DESC LIMIT 3"
+        cursor.execute(sql)
+        results = cursor.fetchall()
+
+        # Close the database connection
+        connection.close()
+
+        return results
+    except Exception as e:
+        print("Error retrieving last 3 questions and answers:", e)
+
+
+# Define a function to add a question and its corresponding answer to the database
+def add_question_answer(question, answer):
+    try:
+        # Connect to the database
+        connection = connect_db()
+        cursor = connection.cursor()
+
+        # Insert the question and answer into the table
+        sql = "INSERT INTO conversation (question, answer) VALUES (%s, %s)"
+        val = (question, answer)
+        cursor.execute(sql, val)
+
+        # Commit the changes
+        connection.commit()
+
+        # Close the database connection
+        connection.close()
+
+        print("Question and answer added successfully!")
+    except Exception as e:
+        print("Error adding question and answer:", e)
+
+
+
+
 # Define function togenerate response using GPT-3
 def generate_response(prompt, history=""):
     """
     Generates a response to the user's input using GPT-3 and the conversation history.
     """
+    promp=""
+    p_QA = get_last_3_questions_answers()
+    p=[]
+    for row in p_QA:
+        p.append(f"Q:{row[0]}\nA:{row[1]}\n")
+    for i in range(len(p)-1,-1,-1):
+        promp+=p[i]
+    promp += (f"Q: {prompt}\n"
+              "A:")
+    print(promp)
     # Concatenate prompt and history
-    prompt = f"{prompt.strip()} {history.strip()}"
-    print(prompt)
+    # prompt = f"{prompt.strip()} {history.strip()}"
 
     # Generate response using GPT-3
     response = openai.Completion.create(
         engine="davinci",
-        prompt=prompt,
+        prompt=promp,
         max_tokens=100,
         n=1,
         stop=None,
-        temperature=0.5
+        temperature=0.4
     )
 
     # Extract response text from API result
     response_text = response.choices[0].text.strip()
     return response_text
+
+
 
 # Define a route to handle incoming requests
 @app.route('/whatgpt', methods=['POST'])
@@ -60,33 +118,9 @@ def whatgpt():
     print("Bot is running")
     incoming_que = request.values.get('Body', '').lower()
     print("Question: ", incoming_que)
-
-    # Connect to the MySQL database
-    connection = connect_db()
-
-    # Get the conversation history from the database
-    cursor = connection.cursor()
-    cursor.execute("SELECT input_text, response_text FROM conversation_history ORDER BY id DESC LIMIT 1")
-    result =cursor.fetchone()
-    if result is None:
-        history = ""
-    else:
-        history = f"Q: {result[0]}\nA: {result[1]}\n"
-
-    # Generate the response using GPT-3
-    answer = generate_response(incoming_que, history)
-
-    # Store the conversation history in the database
-    cursor.execute("INSERT INTO conversation_history (input_text, response_text, history) VALUES (%s, %s, %s)",
-                   (incoming_que, answer, history))
-    connection.commit()
-
-    # Close the database connection
-    cursor.close()
-    connection.close()
-
+    answer = generate_response(incoming_que)
+    add_question_answer(incoming_que,answer)
     print("Bot Answer: ", answer)
-
     # Send the response to Twilio
     bot_resp = MessagingResponse()
     msg = bot_resp.message()
