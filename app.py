@@ -38,6 +38,7 @@ def generate_response(prompt, history=""):
     """
     # Concatenate prompt and history
     prompt = f"{prompt.strip()} {history.strip()}"
+    print(prompt)
 
     # Generate response using GPT-3
     response = openai.Completion.create(
