@@ -97,12 +97,12 @@ def generate_response(prompt, user_id):
 
     # Generate response using GPT-3
     response = openai.Completion.create(
-        engine="davinci",
+        engine="text-davinci-003",
         prompt=promp,
-        max_tokens=100,
+        max_tokens=1000,
         n=1,
         stop=None,
-        temperature=0.4
+        temperature=0.5
     )
 
     # Extract response text from API result
