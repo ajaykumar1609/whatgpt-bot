@@ -34,6 +34,7 @@ def connect_db():
 # Call OpenAI API to generate response
 def generate_response(question, history):
     prompt = f"{history} Q: {question}\nA:"
+    print("Prompt:", prompt)
     response = openai.Completion.create(
         engine="davinci",
         prompt=prompt,
@@ -45,7 +46,9 @@ def generate_response(question, history):
 
     # Extract response text from API result
     response_text = response.choices[0].text.strip()
+    print("Response:", response_text)
     return response_text
+
 
 # Define a route to handle incoming requests
 @app.route('/whatgpt', methods=['POST'])
