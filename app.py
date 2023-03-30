@@ -41,7 +41,7 @@ def get_last_3_questions_answers(user_id):
         cursor = connection.cursor()
 
         # Retrieve the last 3 questions and their corresponding answers from the table
-        cursor.execute("SELECT question, answer FROM user_conversation WHERE phone_number = %s ORDER BY id DESC LIMIT 3", (user_id,))
+        cursor.execute("SELECT question, answer FROM user_conversation WHERE user_id = %s ORDER BY id DESC LIMIT 3", (user_id,))
         results = cursor.fetchall()
 
         # Close the database connection
@@ -60,7 +60,7 @@ def add_question_answer(user_id,question, answer):
         cursor = connection.cursor()
 
         # Insert the question and answer into the table
-        cursor.execute("INSERT INTO user_conversation (phone_number, question, answer) VALUES (%s, %s, %s)", (user_id, question, answer))
+        cursor.execute("INSERT INTO user_conversation (user_id, question, answer) VALUES (%s, %s, %s)", (user_id, question, answer))
         # val = (question, answer)
         # cursor.execute(sql, val)
 
