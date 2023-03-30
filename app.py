@@ -116,6 +116,8 @@ def whatgpt():
     print("Bot is running")
     incoming_que = request.values.get('Body', '').lower()
     print("Question: ", incoming_que)
+    user_id = request.values.get('From')
+    print('User ID:', user_id)
     answer = generate_response(incoming_que)
     for i in range(len(answer)):
         if answer[i]=="Q":
