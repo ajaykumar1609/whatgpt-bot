@@ -31,9 +31,15 @@ def connect_db():
     except Exception as e:
         print("Error connecting to the database:", e)
 
-# Call OpenAI API to generate response
-def generate_response(question, history):
-    prompt = f"{history.strip()} Q: {question.strip()}\nA:"
+# Define function to generate response using GPT-3
+def generate_response(prompt, history=""):
+    """
+    Generates a response to the user's input using GPT-3 and the conversation history.
+    """
+    # Concatenate prompt and history
+    prompt = f"{prompt.strip()} {history.strip()}"
+
+    # Generate response using GPT-3
     response = openai.Completion.create(
         engine="davinci",
         prompt=prompt,
