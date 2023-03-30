@@ -64,6 +64,7 @@ def generate_response(prompt):
 @app.route("/whatgpt", methods=["POST"])
 def whatgpt():
     message = request.form["message"]
+    print(message)
 
     # Retrieve the conversation history
     cursor.execute("SELECT id, input_text, response_text FROM conversation_history2 ORDER BY id DESC LIMIT 1")
