@@ -117,7 +117,7 @@ def whatgpt():
     print("Question: ", incoming_que)
     user_id = request.values.get('From')
     print('User ID:', user_id)
-    answer = generate_response(incoming_que)
+    answer = generate_response(incoming_que,user_id)
     for i in range(len(answer)):
         if answer[i]=="Q":
             if answer[i+1]==":":
