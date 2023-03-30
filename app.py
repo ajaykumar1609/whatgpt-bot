@@ -1,90 +1,98 @@
-from flask import Flask, request
-import openai
-from twilio.twiml.messaging_response import MessagingResponse
 import os
+import openai
 import mysql.connector
+from flask import Flask, request, jsonify
 
-# Init the Flask App
-app = Flask(__name__)
+# Connect to MySQL database
+mysql_host = os.getenv("MYSQLHOST")
+mysql_user = os.getenv("MYSQLUSER")
+mysql_password = os.getenv("MYSQLPASSWORD")
+mysql_database = os.getenv("MYSQLDATABASE")
+mysql_port = os.getenv("MYSQLPORT")
 
-# Initialize the OpenAI API key
+try:
+    connection = mysql.connector.connect(
+        host=mysql_host,
+        user=mysql_user,
+        password=mysql_password,
+        database=mysql_database,
+        port=mysql_port,
+    )
+    cursor = connection.cursor()
+    print("MySQL Connection Established!")
+except mysql.connector.Error as error:
+    print("Error while connecting to MySQL", error)
+
+
+# Initialize OpenAI API
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Initialize the MySQL database connection details
-MYSQLHOST = os.getenv("MYSQLHOST")
-MYSQLPORT = os.getenv("MYSQLPORT")
-MYSQLUSER = os.getenv("MYSQLUSER")
-MYSQLPASSWORD = os.getenv("MYSQLPASSWORD")
-MYSQLDATABASE = os.getenv("MYSQLDATABASE")
+app = Flask(__name__)
 
-# Define a function to connect to the MySQL database
-def connect_db():
-    try:
-        connection = mysql.connector.connect(
-            host=MYSQLHOST,
-            port=MYSQLPORT,
-            user=MYSQLUSER,
-            password=MYSQLPASSWORD,
-            database=MYSQLDATABASE
-        )
-        return connection
-    except Exception as e:
-        print("Error connecting to the database:", e)
 
-# Call OpenAI API to generate response
-def generate_response(question, history):
-    prompt = f"{history} Q: {question}\nA:"
+# Create a new conversation history
+def create_new_history(input_text, response_text):
+    cursor.execute("INSERT INTO conversation_history2 (input_text, response_text, history) VALUES (%s, %s, %s)", (input_text, response_text, ""))
+    connection.commit()
+    return cursor.lastrowid
+
+
+# Append to existing conversation history
+def append_to_history(conversation_id, response_text):
+    cursor.execute("SELECT history FROM conversation_history2 WHERE id=%s", (conversation_id,))
+    history = cursor.fetchone()[0]
+    history += response_text + "\n"
+    cursor.execute("UPDATE conversation_history2 SET response_text=%s, history=%s WHERE id=%s", (response_text, history, conversation_id))
+    connection.commit()
+
+
+# Generate a response from OpenAI API
+def generate_response(prompt):
     response = openai.Completion.create(
         engine="davinci",
         prompt=prompt,
-        max_tokens=100,
+        max_tokens=1024,
         n=1,
         stop=None,
-        temperature=0.7
+        temperature=0.5,
     )
 
-    # Extract response text from API result
-    response_text = response.choices[0].text.strip()
-    return response_text
+    return response.choices[0].text.strip()
 
-# Define a route to handle incoming requests
-@app.route('/whatgpt', methods=['POST'])
+
+# Define a route to receive messages from the user
+@app.route("/whatgpt", methods=["POST"])
 def whatgpt():
-    print("Bot is running")
-    incoming_que = request.values.get('Body', '').lower()
-    print("Question: ", incoming_que)
+    message = request.form["message"]
 
-    # Connect to the MySQL database
-    connection = connect_db()
+    # Retrieve the conversation history
+    cursor.execute("SELECT id, input_text, response_text FROM conversation_history2 ORDER BY id DESC LIMIT 1")
+    row = cursor.fetchone()
 
-    # Get the conversation history from the database
-    cursor = connection.cursor()
-    cursor.execute("SELECT history FROM conversation_history2 ORDER BY id DESC LIMIT 1")
-    result = cursor.fetchone()
-    if result is None:
-        history = ""
+    # If no conversation history exists, create a new one
+    if not row:
+        conversation_id = create_new_history(message, "")
+        response = generate_response(message)
+        append_to_history(conversation_id, response)
+        return jsonify(response)
+
+    # If a conversation history exists, retrieve it
+    conversation_id, input_text, response_text = row
+
+    # If the most recent message was from the user, generate a response
+    if response_text == "":
+        response = generate_response(input_text + "\n" + message)
+        append_to_history(conversation_id, response)
+        return jsonify(response)
+
+    # If the most recent message was from the bot, return the next message in the history
     else:
-        history = result[0]
+        append_to_history(conversation_id, "")
+        return jsonify(response_text)
 
-    # Generate the response using GPT-3
-    answer = generate_response(incoming_que, history)
 
-    # Store the conversation history in the database
-    history += f"Q: {incoming_que}\nA: {answer}\n"
-    cursor.execute("INSERT INTO conversation_history2 (history) VALUES (%s)", (history,))
-    connection.commit()
-
-    # Close the database connection
-    cursor.close()
-    connection.close()
-
-    print("Bot Answer: ", answer)
-
-    # Send the response to Twilio
-    bot_resp = MessagingResponse()
-    msg = bot_resp.message()
-    msg.body(answer)
-    return str(bot_resp)
+# if __name__ == "__main__":
+#     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
 # Run the Flask app
 if __name__ == '__main__':
