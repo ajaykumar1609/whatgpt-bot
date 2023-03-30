@@ -42,7 +42,7 @@ def generate_response(prompt, history=""):
 
     # Generate response using GPT-3
     response = openai.Completion.create(
-        engine="davinci-text-002",
+        engine="davinci-text-003",
         prompt=prompt,
         max_tokens=100,
         n=1,
