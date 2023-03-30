@@ -31,10 +31,10 @@ def connect_db():
     except Exception as e:
         print("Error connecting to the database:", e)
 
-# Define function to generate response using GPT-3
+# Define function togenerate response using GPT-3
 def generate_response(prompt, history=""):
     """
-    Generates a response to the user's input using GPT-3 andthe conversation history.
+    Generates a response to the user's input using GPT-3 and the conversation history.
     """
     # Concatenate prompt and history
     prompt = f"{prompt.strip()} {history.strip()}"
@@ -42,12 +42,12 @@ def generate_response(prompt, history=""):
 
     # Generate response using GPT-3
     response = openai.Completion.create(
-        engine="davinci",
+        engine="davinci-codex",
         prompt=prompt,
         max_tokens=100,
         n=1,
         stop=None,
-        temperature=0.7
+        temperature=0.5
     )
 
     # Extract response text from API result
@@ -67,7 +67,7 @@ def whatgpt():
     # Get the conversation history from the database
     cursor = connection.cursor()
     cursor.execute("SELECT input_text, response_text FROM conversation_history ORDER BY id DESC LIMIT 1")
-    result = cursor.fetchone()
+    result =cursor.fetchone()
     if result is None:
         history = ""
     else:
