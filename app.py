@@ -34,7 +34,7 @@ def connect_db():
 # Define function to generate response using GPT-3
 def generate_response(prompt, history=""):
     """
-    Generates a response to the user's input using GPT-3 and the conversation history.
+    Generates a response to the user's input using GPT-3 andthe conversation history.
     """
     # Concatenate prompt and history
     prompt = f"{prompt.strip()} {history.strip()}"
@@ -66,19 +66,19 @@ def whatgpt():
 
     # Get the conversation history from the database
     cursor = connection.cursor()
-    cursor.execute("SELECT history FROM conversation_history2 ORDER BY id DESC LIMIT 1")
+    cursor.execute("SELECT input_text, response_text FROM conversation_history ORDER BY id DESC LIMIT 1")
     result = cursor.fetchone()
     if result is None:
         history = ""
     else:
-        history = result[0]
+        history = f"Q: {result[0]}\nA: {result[1]}\n"
 
     # Generate the response using GPT-3
     answer = generate_response(incoming_que, history)
 
     # Store the conversation history in the database
-    history += f"Q: {incoming_que}\nA: {answer}\n"
-    cursor.execute("INSERT INTO conversation_history2 (history) VALUES (%s)", (history,))
+    cursor.execute("INSERT INTO conversation_history (input_text, response_text, history) VALUES (%s, %s, %s)",
+                   (incoming_que, answer, history))
     connection.commit()
 
     # Close the database connection
