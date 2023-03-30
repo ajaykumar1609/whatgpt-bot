@@ -110,8 +110,6 @@ def generate_response(prompt, history=""):
     response_text = response.choices[0].text.strip()
     return response_text
 
-
-
 # Define a route to handle incoming requests
 @app.route('/whatgpt', methods=['POST'])
 def whatgpt():
@@ -119,6 +117,11 @@ def whatgpt():
     incoming_que = request.values.get('Body', '').lower()
     print("Question: ", incoming_que)
     answer = generate_response(incoming_que)
+    for i in range(len(answer)):
+        if answer[i]=="Q":
+            if answer[i+1]==":":
+                answer = answer[:i-1]
+                break
     add_question_answer(incoming_que,answer)
     print("Bot Answer: ", answer)
     # Send the response to Twilio
