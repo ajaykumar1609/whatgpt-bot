@@ -1,6 +1,6 @@
 # Flask Chatbot with OpenAI GPT-3 and MySQL
 
-This is a Flask-based chatbot that uses OpenAI's GPT-3 natural language processing API to generate responses to user input. The chatbot also stores the conversation history in a MySQL database. You can access the bot using this bot by messaging "join salt-properly" at [+1 (415) 523-8886].
+This is a Flask-based chatbot that uses OpenAI's GPT-3 natural language processing API to generate responses to user input. The chatbot also stores the conversation history in a MySQL database. You can access the bot by messaging "join salt-properly" at [+1 (415) 523-8886].
 
 ## Technologies Used
 
