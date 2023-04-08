@@ -74,6 +74,24 @@ def add_question_answer(user_id,question, answer):
         print("Error adding question and answer:", e)
 
 
+def delete_history(user_id):
+    try:
+        connection = connect_db()
+        cursor = connection.cursor()
+
+        # Insert the question and answer into the table
+        cursor.execute("DELETE FROM user_conversation WHERE user_id = user_id", (user_id,))
+        # val = (question, answer)
+        # cursor.execute(sql, val)
+
+        # Commit the changes
+        connection.commit()
+
+        connection.close()
+
+        print("deleted history successfully!")
+    except Exception as e:
+        print("Error deleting:", e)
 
 
 # Define function togenerate response using GPT-3
@@ -153,9 +171,17 @@ def generate_response(prompt, user_id):
 def whatgpt():
     print("Bot is running")
     incoming_que = request.values.get('Body', '').lower()
+    
     print("Question: ", incoming_que)
     user_id = request.values.get('From')
     print('User ID:', user_id)
+    if incoming_que == "new topic":
+        delete_history(user_id)
+        # Send the response to Twilio
+        bot_resp = MessagingResponse()
+        msg = bot_resp.message()
+        msg.body(answer)
+        return str(bot_resp)
     m = {"role": "user", "content": incoming_que}
     answer = generate_response(m,user_id)
     # for i in range(len(answer)):
