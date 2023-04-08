@@ -80,7 +80,7 @@ def delete_history(user_id):
         cursor = connection.cursor()
 
         # Insert the question and answer into the table
-        cursor.execute("DELETE FROM user_conversation WHERE user_id = user_id", (user_id,))
+        cursor.execute("DELETE FROM user_conversation WHERE user_id = ?", (user_id,))
         # val = (question, answer)
         # cursor.execute(sql, val)
 
@@ -96,16 +96,7 @@ def delete_history(user_id):
 
 # Define function togenerate response using GPT-3
 def generate_response(prompt, user_id):
-    promp=""
     rows = get_last_3_questions_answers(user_id)
-    # p=[]
-    # for row in p_QA:
-    #     p.append(f"Q:{row[0]}\nA:{row[1]}\n")
-    # for i in range(len(p)-1,-1,-1):
-    #     promp+=p[i]
-    # promp += (f"Q: {prompt}\n"
-    #           "A:")
-    # print(promp)
     messages = [{"role": "system", "content": "You are a helpful assistant."}]
     for row in reversed(rows):
         question = row[0]
@@ -114,57 +105,11 @@ def generate_response(prompt, user_id):
         messages.append({"role": "assistant", "content": answer})
     messages.append(prompt)
     print(messages)
-
-    # Concatenate prompt and history
-    # prompt = f"{prompt.strip()} {history.strip()}"
-
-
-    # Generate response using GPT-3
-    # response = openai.Completion.create(
-    #     engine="gpt-3.5-turbo",
-    #     prompt=promp,
-    #     max_tokens=1000,
-    #     n=1,
-    #     stop=None,
-    #     temperature=0.5
-    # )
-
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=messages
     )
-
-
-    # Extract response text from API result
-    # response_text = response.choices[0].text.strip()
-    # return response_text
     return response['choices'][0]['message']['content']
-
-# # Define a route to handle incoming requests
-# @app.route('/whatgpt', methods=['POST'])
-# def whatgpt():
-#     print("Bot is running")
-#     incoming_que = request.values.get('Body', '').lower()
-#     print("Question: ", incoming_que)
-#     user_id = request.values.get('From')
-#     print('User ID:', user_id)
-#     answer = generate_response(incoming_que,user_id)
-#     for i in range(len(answer)):
-#         if answer[i]=="Q":
-#             if answer[i+1]==":":
-#                 answer = answer[:i-1]
-#                 break
-#     add_question_answer(user_id,incoming_que,answer)
-#     print("Bot Answer: ", answer)
-#     # Send the response to Twilio
-#     bot_resp = MessagingResponse()
-#     msg = bot_resp.message()
-#     msg.body(answer)
-#     return str(bot_resp)
-
-# # Run the Flask app
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', debug=False, port=5000)
 
 # Define a route to handle incoming requests
 @app.route('/whatgpt', methods=['POST'])
