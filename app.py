@@ -80,7 +80,7 @@ def delete_history(user_id):
         cursor = connection.cursor()
 
         # Insert the question and answer into the table
-        cursor.execute("DELETE FROM user_conversation WHERE user_id = ?", (user_id,))
+        cursor.execute("DELETE FROM user_conversation WHERE user_id = %s", (user_id,))
         # val = (question, answer)
         # cursor.execute(sql, val)
 
