@@ -43,7 +43,7 @@ def get_last_3_questions_answers(user_id):
         cursor = connection.cursor()
 
         # Retrieve the last 3 questions and their corresponding answers from the table
-        cursor.execute("SELECT question, answer FROM user_conversation WHERE user_id = %s ORDER BY id DESC", (user_id,))
+        cursor.execute("SELECT question, answer FROM user_conversation WHERE user_id = %s ORDER BY id DESC LIMIT 10", (user_id,))
         results = cursor.fetchall()
 
         connection.close()
