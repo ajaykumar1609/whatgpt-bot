@@ -107,13 +107,13 @@ def generate_response(prompt, user_id):
     #           "A:")
     # print(promp)
     messages = [{"role": "system", "content": "You are a helpful assistant."}]
-    for row in rows:
+    for row in reversed(rows):
         question = row[0]
         answer = row[1]
         messages.append({"role": "user", "content": question})
         messages.append({"role": "assistant", "content": answer})
     messages.append(prompt)
-
+    print(messages)
 
     # Concatenate prompt and history
     # prompt = f"{prompt.strip()} {history.strip()}"
@@ -180,7 +180,7 @@ def whatgpt():
         # Send the response to Twilio
         bot_resp = MessagingResponse()
         msg = bot_resp.message()
-        msg.body(answer)
+        msg.body("Yeah now you can start a new topic")
         return str(bot_resp)
     m = {"role": "user", "content": incoming_que}
     answer = generate_response(m,user_id)
